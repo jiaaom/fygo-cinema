@@ -409,6 +409,7 @@ function createWindow() {
     showSetup(wc, 'connecting');
   });
   wc.on('render-process-gone', (_e, d) => {
+    if (quitting) return;   // stopping: the renderer goes first, nothing to reload
     console.error(`cinema: renderer gone (${d.reason}); reloading`);
     setTimeout(() => wc.loadURL(START_URL), 1000);
   });
@@ -461,6 +462,10 @@ app.whenReady().then(async () => {
   createWindow();
 });
 // flush the kept session to disk on the way out (systemd stop = SIGTERM)
-app.on('before-quit', () => { session.defaultSession.cookies.flushStore().catch(() => {}); });
+let quitting = false;
+app.on('before-quit', () => {
+  quitting = true;
+  session.defaultSession.cookies.flushStore().catch(() => {});
+});
 process.on('SIGTERM', () => app.quit());
 app.on('window-all-closed', () => app.quit());

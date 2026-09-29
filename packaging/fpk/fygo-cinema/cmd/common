@@ -80,6 +80,12 @@ LoadCredentialEncrypted=$CRED_NAME:$STATE/account.cred
 ExecStart=$TRIM_APPDEST/kiosk/run-kiosk.sh
 Restart=on-failure
 RestartSec=3
+# Stop = SIGTERM to Electron's main process only; it closes its GPU, network
+# and renderer processes itself. (The default sends SIGTERM to all of them at
+# once: the main process then sees its GPU process die, fails to relaunch it
+# and aborts, i.e. every TV unplug would be a crash.) Leftovers get SIGKILL.
+KillMode=mixed
+TimeoutStopSec=10
 UNIT
     systemctl daemon-reload
     systemctl enable "$DAEMON_UNIT" >/dev/null 2>&1

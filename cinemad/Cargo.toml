@@ -1,13 +1,13 @@
 [package]
 name = "cinemad"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 description = "Fygo Cinema backend: TV screen and sound choice, stored account, kiosk supervision, admin page"
 license = "MIT"
 
 [dependencies]
 axum = "0.8"
-tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time", "process", "fs"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "signal", "sync", "time", "process", "fs", "io-util"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

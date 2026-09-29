@@ -2,14 +2,19 @@
 //! seconds and right after any change:
 //!
 //!   - the TV: the chosen (or auto-detected) screen gets our window rule in
-//!     /etc/appliance-compositor/clients.d/fygo-cinema.ini, with 2x scaling on
-//!     4K so the web app is laid out for 1080p. The compositor reads fragments
-//!     at start, so a changed fragment means restarting it (the other apps'
+//!     /etc/appliance-compositor/clients.d/fygo-cinema.ini, read when the
+//!     compositor starts. A change of screen is also sent to the running
+//!     compositor (set-output on its control socket), which moves the window
+//!     there: no restart, the other screens stay as they are. Only a
+//!     compositor without set-output is restarted instead (the other apps'
 //!     windows come back with it: their units are PartOf= it).
-//!   - the sound: the chosen (or the TV's own) output goes to the kiosk in
-//!     /run/fygo-cinema/kiosk.env; a change restarts the kiosk.
-//!   - the kiosk runs while the app is on, an account is stored and the TV is
-//!     plugged in; unplugging the TV stops it, plugging it in starts it.
+//!   - the page size: a zoom for the TV's resolution (screens::auto_zoom) or
+//!     the admin's, and the sound: the chosen (or the TV's own) output; both
+//!     go to the kiosk in /run/fygo-cinema/kiosk.env, and a change restarts
+//!     the kiosk.
+//!   - the kiosk runs while the app is on and the TV is plugged in; unplugging
+//!     the TV stops it, plugging it in starts it. Without an account it runs
+//!     too, and shows how to add one instead of a black TV.
 
 use crate::{account, audio, paths, screens, settings};
 use serde::Serialize;
@@ -92,7 +97,13 @@ impl Supervisor {
             if write_if_changed(&fragment_path(), &fragment(s)) {
                 eprintln!("cinemad: TV screen is now {} ({})", s.name, s.monitor.as_deref().unwrap_or("no name"));
                 if compositor_active {
-                    compositor_restarted = systemctl(&["restart", paths::COMPOSITOR_UNIT]).await;
+                    match set_output(&s.name).await {
+                        Ok(moved) => eprintln!("cinemad: compositor moved {moved} window(s) to {}", s.name),
+                        Err(e) => {
+                            eprintln!("cinemad: set-output: {e}; restarting the compositor instead");
+                            compositor_restarted = systemctl(&["restart", paths::COMPOSITOR_UNIT]).await;
+                        }
+                    }
                 }
             }
         }
@@ -162,15 +173,46 @@ pub fn fragment_path() -> std::path::PathBuf {
 }
 
 /// Our clients.d fragment for a TV screen: the window rule only. (No output
-/// scale: the page size is the kiosk's zoom, see CINEMA_ZOOM.)
+/// scale: the page size is the kiosk's zoom, see CINEMA_ZOOM.) The focus
+/// priority keeps the remote's keys on the TV while the kiosk runs, even when
+/// another app's window on another screen is above it (a front panel's
+/// screensaver while that screen is dark). output-fallback=none: while the TV
+/// is not connected the window stays hidden, never on another app's screen
+/// (the moments between an unplug and the kiosk's stop, or a start racing an
+/// unplug).
 pub fn fragment(s: &screens::Screen) -> String {
     format!(
         "# Fygo Cinema (written by cinemad; the screen is chosen on its admin page):\n\
-         # the TV kiosk's window on the TV.\n\
-         [appliance-rule]\napp-id={app}\nlayer=0\noutput={name}\n",
+         # the TV kiosk's window on the TV, and the keyboard while it runs.\n\
+         [appliance-rule]\napp-id={app}\nlayer=0\noutput={name}\noutput-fallback=none\nfocus-priority=10\n",
         name = s.name,
         app = paths::APP_ID,
     )
+}
+
+/// Point our window rule at another output in the running compositor and move
+/// the kiosk's window there (appliance-shell's `set-output`). Err when the
+/// compositor can't do it (an older one answers "unknown command"), so the
+/// caller restarts it instead.
+async fn set_output(output: &str) -> Result<u64, String> {
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    if dry_run() {
+        eprintln!("cinemad: (dry run) set-output {} {output}", paths::APP_ID);
+        return Ok(0);
+    }
+    let talk = async {
+        let mut stream = tokio::net::UnixStream::connect(paths::shell_socket()).await.map_err(|e| e.to_string())?;
+        stream.write_all(format!("set-output {} {output}\n", paths::APP_ID).as_bytes()).await.map_err(|e| e.to_string())?;
+        let mut line = String::new();
+        BufReader::new(stream).read_line(&mut line).await.map_err(|e| e.to_string())?;
+        let reply: serde_json::Value = serde_json::from_str(&line).map_err(|e| format!("bad reply {line:?}: {e}"))?;
+        if reply.get("ok").and_then(|v| v.as_bool()) == Some(true) {
+            Ok(reply.get("moved").and_then(|v| v.as_u64()).unwrap_or(0))
+        } else {
+            Err(reply.get("error").and_then(|v| v.as_str()).unwrap_or("failed").to_string())
+        }
+    };
+    tokio::time::timeout(Duration::from_secs(3), talk).await.map_err(|_| "no answer".to_string())?
 }
 
 /// True when the file's content changed (and was written).
@@ -213,6 +255,54 @@ async fn systemctl(args: &[&str]) -> bool {
         Err(e) => {
             eprintln!("cinemad: systemctl: {e}");
             false
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+
+    /// A fake appliance-shell control socket answering one line.
+    async fn fake_shell(path: &std::path::Path, reply: &'static str) -> tokio::task::JoinHandle<String> {
+        let _ = std::fs::remove_file(path);
+        let listener = tokio::net::UnixListener::bind(path).unwrap();
+        tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let (r, mut w) = stream.into_split();
+            let mut line = String::new();
+            BufReader::new(r).read_line(&mut line).await.unwrap();
+            w.write_all(reply.as_bytes()).await.unwrap();
+            line
+        })
+    }
+
+    #[tokio::test]
+    async fn set_output_moves_or_reports_an_old_compositor() {
+        let dir = std::env::temp_dir().join(format!("cinemad-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let sock = dir.join("s");
+        std::env::set_var("CINEMA_SHELL_SOCKET", &sock);
+
+        let got = fake_shell(&sock, "{\"ok\":true,\"moved\":1}\n").await;
+        assert_eq!(set_output("DP-2").await, Ok(1));
+        assert_eq!(got.await.unwrap(), "set-output fygo-cinema DP-2\n");
+
+        let _ = fake_shell(&sock, "{\"ok\":false,\"error\":\"unknown command\"}\n").await;
+        assert_eq!(set_output("DP-2").await, Err("unknown command".into()));
+
+        std::fs::remove_dir_all(&dir).ok();
+        std::env::set_var("CINEMA_SHELL_SOCKET", dir.join("missing"));
+        assert!(set_output("DP-2").await.is_err());
+    }
+
+    #[test]
+    fn fragment_keeps_the_tv_to_itself() {
+        let s = screens::Screen { name: "HDMI-A-2".into(), connected: true, monitor: None, vendor: None, mode: None, size_mm: None, internal: false, claimed_by: None };
+        let f = fragment(&s);
+        for key in ["app-id=fygo-cinema", "output=HDMI-A-2", "output-fallback=none", "focus-priority=10"] {
+            assert!(f.lines().any(|l| l == key), "{key} missing in\n{f}");
         }
     }
 }

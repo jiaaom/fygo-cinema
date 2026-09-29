@@ -92,8 +92,17 @@ the admin page, it brings the machine to the chosen state.
     eDP, LVDS or DSI connector, or a known panel bridge such as the T6's
     IT6616.
   - The choice becomes our window rule in
-    `/etc/appliance-compositor/clients.d/fygo-cinema.ini`. A change restarts
-    the compositor.
+    `/etc/appliance-compositor/clients.d/fygo-cinema.ini`, read when the
+    compositor starts. A change is also sent to the running compositor
+    (`set-output` on appliance-shell's control socket), which moves the
+    window without a restart. Only a compositor older than 1.1 is restarted
+    instead.
+  - `output-fallback=none`: while the TV is unplugged the window stays
+    hidden, never on the front panel.
+  - The rule also sets `focus-priority=10`: the remote's keys stay on the TV
+    while the kiosk runs, even when the front panel's screensaver (a higher
+    layer, on another screen) is up. After the TV is unplugged, the keys go
+    back to the panel.
 - **Page size.**
   - Auto: 200 % above 1080 lines, 150 % at 1080 lines and fewer. The admin
     page can override it (50–300 %).

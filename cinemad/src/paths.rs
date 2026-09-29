@@ -32,3 +32,9 @@ pub const KIOSK_UNIT: &str = "fygo-cinema-kiosk.service";
 pub const COMPOSITOR_UNIT: &str = "appliance-compositor.service";
 /// The compositor's clients (and PipeWire) run as root in this runtime dir.
 pub const CLIENT_RUNTIME_DIR: &str = "/run/user/0";
+
+/// appliance-shell's control socket (its docs: shell/README.md, "Control
+/// socket"; `$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY.appliance-shell`).
+pub fn shell_socket() -> PathBuf {
+    env_or("CINEMA_SHELL_SOCKET", "/run/user/0/wayland-appliance.appliance-shell")
+}
