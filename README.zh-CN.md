@@ -29,14 +29,14 @@
 
 - FygoOS / fnOS 1.2 或更新版本，Intel 显卡。（AMD/英伟达显卡未测试）
 - **飞牛影视**（`trim.media`），在应用中心安装。
-- **[Appliance Compositor](https://github.com/jiaaom/appliance-compositor)**：每个 Fygo Cinema 的 Release 都附带它的 `.fpk`（也可以在它自己的 [Releases 页面](https://github.com/jiaaom/appliance-compositor/releases) 下载）。
+- **[Appliance Compositor](https://github.com/jiaaom/appliance-compositor)**：在它自己的 [Releases 页面](https://github.com/jiaaom/appliance-compositor/releases) 下载。
 - 接在 NAS 的 HDMI 或 DisplayPort 口上的电视（或显示器），以及一个遥控器或键盘（蓝牙或 USB 均可）。
 
 Fygo Cinema 可以和 T6 Front Panel 同时运行（后者可选）：两者都是 [appliance-compositor](https://github.com/jiaaom/appliance-compositor) 里的窗口，共用同一个显示和声音服务。
 
 ## 安装
 
-1. 从[最新 Release](https://github.com/jiaaom/fygo-cinema/releases/latest) 下载 `appliance-compositor.fpk` 和 `fygo-cinema.fpk`。
+1. 下载最新的 [`appliance-compositor.fpk`](https://github.com/jiaaom/appliance-compositor/releases/latest/download/appliance-compositor.fpk) 和 [`fygo-cinema.fpk`](https://github.com/jiaaom/fygo-cinema/releases/latest/download/fygo-cinema.fpk)。
 2. 在应用中心 → 手动安装中，先安装 `appliance-compositor.fpk`，再安装 `fygo-cinema.fpk`。
 3. 在 fnOS 桌面打开 **Fygo Cinema**，填写电视要登录的飞牛影视账户。
 4. 插上电视，飞牛影视就会出现在电视上。
