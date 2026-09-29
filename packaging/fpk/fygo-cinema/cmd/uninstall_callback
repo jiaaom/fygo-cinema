@@ -1,0 +1,5 @@
+#!/bin/bash
+# The App Center passes the uninstall wizard values here.
+. "$(dirname "$0")/common"
+remove_settings
+exit 0

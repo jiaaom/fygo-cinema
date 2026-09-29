@@ -1,0 +1,119 @@
+# Shared definitions for the Fygo Cinema lifecycle scripts (sourced, not
+# executed). We are a client of appliance-compositor and use only its runtime
+# contract (its docs/CONTRACT.md): the /usr/local/lib/appliance-compositor
+# link, client.env, the compositor unit and clients.d. Our clients.d fragment
+# is written by cinemad (it depends on the TV screen chosen on the admin page).
+
+APP=fygo-cinema
+STATE=/var/lib/fygo-cinema
+COMPOSITOR_LINK=/usr/local/lib/appliance-compositor
+COMPOSITOR_ETC=/etc/appliance-compositor
+COMPOSITOR_UNIT=appliance-compositor
+CONTRACT=1
+DAEMON_UNIT=fygo-cinema
+DAEMON_UNIT_FILE=/etc/systemd/system/$DAEMON_UNIT.service
+KIOSK_UNIT=fygo-cinema-kiosk
+KIOSK_UNIT_FILE=/etc/systemd/system/$KIOSK_UNIT.service
+CRED_NAME=fygo-cinema-account
+
+fail() {
+    echo "$*" > "${TRIM_TEMP_LOGFILE:-/dev/stderr}"
+    exit 1
+}
+
+# App Center installs appliance-compositor first (install_dep_apps); make
+# sure it speaks the contract we were written against.
+check_compositor() {
+    local v
+    v=$(cat "$COMPOSITOR_LINK/CONTRACT" 2>/dev/null)
+    [ "$v" = "$CONTRACT" ] || fail "Fygo Cinema needs Appliance Compositor (runtime contract $CONTRACT; found: ${v:-none}). Install or update Appliance Compositor first."
+    command -v systemd-creds >/dev/null || fail "systemd-creds is missing (systemd 250 or newer is needed to store the account)."
+}
+
+# cinemad: the admin page backend and the kiosk's supervisor. Root: it writes
+# the compositor's clients.d, restarts the compositor and the kiosk, and seals
+# the account with the host key.
+install_units() {
+    cat > "$DAEMON_UNIT_FILE" <<UNIT
+[Unit]
+Description=Fygo Cinema backend (TV screen, sound, account, admin page)
+# The gateway forwards /app/fygo-cinema to the socket; start once nginx is up.
+After=trim_nginx.service $COMPOSITOR_UNIT.service
+
+[Service]
+Type=simple
+Environment=TRIM_APPVER=$TRIM_APPVER
+ExecStart=$TRIM_APPDEST/bin/cinemad --gateway-socket $TRIM_APPDEST/app.sock --prefix /app/$APP --web $TRIM_APPDEST/web
+Restart=on-failure
+RestartSec=5
+# /run/fygo-cinema: kiosk.env (ours) and state.json (the kiosk's)
+RuntimeDirectory=$APP
+RuntimeDirectoryPreserve=yes
+StateDirectory=$APP
+StateDirectoryMode=0700
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+    # The kiosk: a window of the compositor, started and stopped by cinemad
+    # (TV plugged in or not), so it has no [Install] section.
+    cat > "$KIOSK_UNIT_FILE" <<UNIT
+[Unit]
+Description=Fygo Cinema TV kiosk (Electron on appliance-compositor)
+After=$COMPOSITOR_UNIT.service appliance-audio-pulse.service trim_nginx.service $DAEMON_UNIT.service
+Wants=appliance-audio-pulse.service
+# A window of the compositor: needs it, and restarts with it.
+Requires=$COMPOSITOR_UNIT.service
+PartOf=$COMPOSITOR_UNIT.service
+
+[Service]
+Type=simple
+# Electron runs --no-sandbox (root); the compositor's client environment
+# (Wayland socket, root's runtime dir with PipeWire).
+EnvironmentFile=$COMPOSITOR_LINK/client.env
+# Chromium profile (the web app's session and player preferences): not /tmp,
+# which Chromium would fall back to without \$HOME.
+Environment=CINEMA_DATA_DIR=$STATE/kiosk
+# The account, decrypted by systemd into this service's credentials dir only.
+LoadCredentialEncrypted=$CRED_NAME:$STATE/account.cred
+ExecStart=$TRIM_APPDEST/kiosk/run-kiosk.sh
+Restart=on-failure
+RestartSec=3
+UNIT
+    systemctl daemon-reload
+    systemctl enable "$DAEMON_UNIT" >/dev/null 2>&1
+}
+
+remove_units() {
+    systemctl stop "$KIOSK_UNIT" >/dev/null 2>&1 || true
+    systemctl disable --now "$DAEMON_UNIT" >/dev/null 2>&1 || true
+    systemctl reset-failed "$KIOSK_UNIT" "$DAEMON_UNIT" >/dev/null 2>&1 || true
+    rm -f "$DAEMON_UNIT_FILE" "$KIOSK_UNIT_FILE" "$TRIM_APPDEST/app.sock"
+    systemctl daemon-reload
+}
+
+# Our window rule. The compositor reads it at its next start; restarting it
+# here would only darken the other screens for nothing.
+remove_fragment() {
+    rm -f "$COMPOSITOR_ETC/clients.d/$APP.ini"
+}
+
+# Uninstall wizard: "remove settings" (screen/sound choice, the stored
+# account, the kiosk's browser profile).
+remove_settings() {
+    logger -t "$APP" "uninstall: wizard_settings=${wizard_settings:-<unset>}"
+    case "${wizard_settings:-keep}" in
+        remove) rm -rf "$STATE" && logger -t "$APP" "uninstall: removed $STATE" ;;
+    esac
+}
+
+start_all() {
+    [ -f "$DAEMON_UNIT_FILE" ] && [ -f "$KIOSK_UNIT_FILE" ] || install_units
+    systemctl restart "$DAEMON_UNIT" || fail "cinemad failed to start (journalctl -u $DAEMON_UNIT)."
+}
+
+stop_all() {
+    systemctl stop "$KIOSK_UNIT" 2>/dev/null || true
+    systemctl stop "$DAEMON_UNIT" 2>/dev/null || true
+}

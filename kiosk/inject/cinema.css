@@ -1,0 +1,66 @@
+/* Fygo Cinema: the web app as a TV screen. */
+
+/* (no cursor rule: weston shows none without a pointer device, and an
+   air-mouse remote wants one; nav.js also reads cursor:pointer) */
+::-webkit-scrollbar { display: none; }
+html, body { scrollbar-width: none; }
+
+/* admin controls the remote does not reach (nav.js marks them) */
+[data-cinema-hidden] { visibility: hidden !important; pointer-events: none !important; }
+
+/* the app's own outline would double the ring */
+:focus, :focus-visible { outline: none !important; }
+
+#cinema-focus-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 2147483646;
+  pointer-events: none;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55), 0 0 22px rgba(255, 255, 255, 0.35);
+  opacity: 0;
+  transition: transform 140ms ease-out, width 140ms ease-out, height 140ms ease-out, opacity 120ms;
+}
+
+#cinema-osd {
+  position: fixed;
+  top: 48px;
+  right: 56px;
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 22px;
+  border-radius: 14px;
+  background: rgba(20, 20, 24, 0.82);
+  color: #fff;
+  font: 600 22px/1 system-ui, sans-serif;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 160ms, transform 160ms;
+}
+#cinema-osd.shown { opacity: 1; transform: none; }
+.cinema-osd-icon {
+  width: 28px;
+  height: 28px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+#cinema-osd.muted .cinema-osd-icon {
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z'/%3E%3C/svg%3E");
+}
+.cinema-osd-bar { width: 240px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.25); overflow: hidden; }
+.cinema-osd-bar > div { height: 100%; background: #fff; transition: width 120ms; }
+.cinema-osd-value { min-width: 2.2em; text-align: right; font-variant-numeric: tabular-nums; }
+
+/* The player's own volume, and picture-in-picture and fullscreen (before it
+   in the row-reversed right grid): the TV's volume is the remote's volume
+   keys (nav.js keeps the player itself at 100 %), and the kiosk is always
+   fullscreen. */
+.xgplayer .xg-right-grid > .xgplayer-volume,
+.xgplayer .xg-right-grid > :has(~ .xgplayer-volume) {
+  display: none !important;
+}

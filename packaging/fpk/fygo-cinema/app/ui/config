@@ -1,0 +1,15 @@
+{
+    ".url": {
+        "fygo-cinema.main": {
+            "title": "${entry.title}",
+            "desc": "${entry.desc}",
+            "icon": "images/icon_{0}.png",
+            "type": "iframe",
+            "protocol": "",
+            "gatewayPrefix": "/app/fygo-cinema",
+            "gatewaySocket": "app.sock",
+            "url": "/app/fygo-cinema/",
+            "allUsers": false
+        }
+    }
+}

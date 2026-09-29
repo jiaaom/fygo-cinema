@@ -1,0 +1,6 @@
+build/
+kiosk/node_modules/
+cinemad/target/
+# large third-party binaries kept locally for research only
+research/
+notes/

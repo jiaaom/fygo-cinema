@@ -1,0 +1,27 @@
+[
+  {
+    "stepTitle": "Remove Fygo Cinema",
+    "items": [
+      {
+        "type": "tips",
+        "helpText": "Fygo TV itself and its library are not touched; Appliance Compositor stays installed."
+      },
+      {
+        "type": "radio",
+        "field": "wizard_settings",
+        "label": "Settings",
+        "initValue": "keep",
+        "options": [
+          {
+            "label": "Keep settings (screen and sound choice, stored account)",
+            "value": "keep"
+          },
+          {
+            "label": "Remove settings and the stored account",
+            "value": "remove"
+          }
+        ]
+      }
+    ]
+  }
+]

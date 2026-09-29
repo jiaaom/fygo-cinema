@@ -1,0 +1,4 @@
+#!/bin/bash
+. "$(dirname "$0")/common"
+check_compositor
+exit 0

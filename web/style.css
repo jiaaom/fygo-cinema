@@ -1,0 +1,422 @@
+/* Fygo Cinema admin page. Tokens, sizes and components follow the fnOS app
+   convention (:root light, html[data-theme="dark"] dark, theme pushed by the
+   desktop through the TrimApp SDK), like the T6 Front Panel's admin page. */
+:root {
+  color-scheme: light;
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --panel: #ffffff;
+  --field: #f7f8fa;
+  --line: #dcdfe4;
+  --text: #1f2329;
+  --muted: #626973;
+  --accent: #1677ff;
+  --accent-hover: #2a86ff;
+  --danger-text: #a92836;
+  --success: #19a565;
+  --button: #eef0f3;
+  --button-hover: #e3e6ea;
+  --button-text: #30343a;
+  --track: #c9ced6;
+  --shadow: 0 16px 40px rgba(22, 30, 45, 0.14);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b0b0c;
+  --surface: #202123;
+  --panel: #242526;
+  --field: #1f2021;
+  --line: #3a3b3d;
+  --text: #f1f1f2;
+  --muted: #a9aaad;
+  --danger-text: #ffd8dd;
+  --success: #76d69e;
+  --button: #303133;
+  --button-hover: #38393c;
+  --button-text: #dedfe1;
+  --track: #4a4b4d;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "HarmonyOS Sans SC", "Microsoft YaHei UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---- shell ---- */
+.app-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  background: var(--surface);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+  padding: 18px 20px 14px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.topbar p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.content {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px 20px 20px;
+}
+
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  padding: 16px 18px 18px;
+}
+
+.panel.off .row,
+.panel.off .section-head button {
+  opacity: 0.5;
+}
+
+.section-head,
+.row-actions,
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.row-actions,
+.modal-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.section-head {
+  margin-bottom: 14px;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.hint {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* label on the left, control on the right */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+
+.row:last-child {
+  padding-bottom: 0;
+}
+
+.row-label > span {
+  font-weight: 700;
+}
+
+/* ---- buttons ---- */
+.primary-btn,
+.ghost-btn,
+.danger-btn {
+  height: 30px;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.primary-btn {
+  background: var(--accent);
+  color: #fff;
+}
+
+.primary-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.ghost-btn {
+  background: var(--button);
+  color: var(--button-text);
+}
+
+.ghost-btn:hover:not(:disabled) {
+  background: var(--button-hover);
+}
+
+.danger-btn {
+  background: rgba(255, 92, 108, 0.14);
+  color: var(--danger-text);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+/* ---- status tiles ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.stat {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--field);
+  padding: 10px 12px;
+}
+
+.stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.stat strong {
+  display: block;
+  overflow: hidden;
+  margin-top: 5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.stat strong.ok {
+  color: var(--success);
+}
+
+/* ---- switch (40x24 pill) ---- */
+.switch {
+  position: relative;
+  flex: none;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.switch i {
+  position: relative;
+  display: block;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--track);
+  transition: background 0.18s;
+}
+
+.switch i::after {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  content: "";
+  transition: transform 0.18s;
+}
+
+.switch input:checked + i {
+  background: var(--accent);
+}
+
+.switch input:checked + i::after {
+  transform: translateX(16px);
+}
+
+.switch input:disabled + i {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+/* ---- select ---- */
+select {
+  min-width: 120px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+}
+
+select:disabled {
+  opacity: 0.5;
+}
+
+/* ---- theme picker ---- */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.modal-content {
+  width: min(460px, calc(100vw - 48px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.modal-content h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+}
+
+#modalBody {
+  white-space: pre-line;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.toast {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  max-width: min(460px, calc(100vw - 44px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--button);
+  box-shadow: var(--shadow);
+  color: var(--text);
+  padding: 10px 14px;
+  font-weight: 700;
+}
+
+.toast.error {
+  color: var(--danger-text);
+}
+
+@media (max-width: 640px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+/* Audio section: installed packages */
+.hint.warn { color: var(--danger-text); }
+
+/* ---- Fygo Cinema additions ---- */
+.stat strong.warn {
+  color: var(--danger-text);
+}
+
+.account-form {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.account-form input {
+  min-width: 0;
+  width: 180px;
+  height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--field);
+  color: var(--text);
+  padding: 0 10px;
+}
+
+.account-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.volume-row input[type="range"] {
+  width: 200px;
+  accent-color: var(--accent);
+}
+
+.volume-row output {
+  min-width: 3ch;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+select {
+  max-width: 340px;
+}

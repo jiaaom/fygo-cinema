@@ -1,0 +1,10 @@
+#!/bin/bash
+# App Center start/stop/status. cinemad starts the kiosk itself when a TV is
+# plugged in (see cmd/common).
+. "$(dirname "$0")/common"
+case "$1" in
+    start) start_all; exit 0 ;;
+    stop) stop_all; exit 0 ;;
+    status) systemctl is-active --quiet "$DAEMON_UNIT" && exit 0 || exit 3 ;;
+    *) exit 1 ;;
+esac

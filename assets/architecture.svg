@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="660" viewBox="0 0 980 660" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif">
+  <title>Fygo Cinema: how it works</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b6472"/>
+    </marker>
+    <style>
+      .bg { fill: #ffffff; }
+      .box { stroke-width: 1.5; rx: 12; }
+      .ours { fill: #eef4ff; stroke: #3b7bff; }
+      .theirs { fill: #f4f5f7; stroke: #9aa1ab; }
+      .base { fill: #f1ecff; stroke: #7c5cff; }
+      .out { fill: #ffffff; stroke: #9aa1ab; }
+      .title { font-size: 17px; font-weight: 700; fill: #1f2329; }
+      .tag { font-size: 12px; font-weight: 600; fill: #5b6472; }
+      .item { font-size: 13.5px; fill: #30343a; }
+      .label { font-size: 12.5px; fill: #3d4450; }
+      .line { stroke: #5b6472; stroke-width: 1.6; fill: none; }
+      .dashed { stroke-dasharray: 5 4; }
+      .swatch { stroke-width: 1.5; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="980" height="660" rx="16"/>
+
+  <!-- top row -->
+  <rect class="box theirs" x="40" y="36" width="340" height="96"/>
+  <text class="title" x="60" y="66">Admin page</text>
+  <text class="tag" x="60" y="86">fnOS desktop · administrators only</text>
+  <text class="item" x="60" y="110">account · TV screen · page size · sound</text>
+
+  <rect class="box theirs" x="540" y="36" width="400" height="96"/>
+  <text class="title" x="560" y="66">Fygo TV server</text>
+  <text class="tag" x="560" y="86">trim.media · unchanged</text>
+  <text class="item" x="560" y="110">the web app /v on 127.0.0.1:5666</text>
+
+  <!-- middle row: ours -->
+  <rect class="box ours" x="40" y="206" width="340" height="176"/>
+  <text class="title" x="60" y="236">cinemad</text>
+  <text class="tag" x="60" y="256">Rust · supervisor</text>
+  <text class="item" x="60" y="282">• picks the TV screen (EDID)</text>
+  <text class="item" x="60" y="304">• picks the sound output (TV speakers)</text>
+  <text class="item" x="60" y="326">• seals the account (systemd-creds)</text>
+  <text class="item" x="60" y="348">• sets the page size</text>
+  <text class="item" x="60" y="370">• starts / stops the kiosk with the TV</text>
+
+  <rect class="box ours" x="540" y="206" width="400" height="176"/>
+  <text class="title" x="560" y="236">Kiosk</text>
+  <text class="tag" x="560" y="256">Electron · fullscreen on the TV</text>
+  <text class="item" x="560" y="282">• the Fygo TV web app, untouched</text>
+  <text class="item" x="560" y="304">• remote navigation and focus ring (nav.js)</text>
+  <text class="item" x="560" y="326">• signs in by itself, stays signed in</text>
+  <text class="item" x="560" y="348">• setup screen instead of a black TV</text>
+  <text class="item" x="560" y="370">• VA-API decoding · volume display</text>
+
+  <!-- base -->
+  <rect class="box base" x="40" y="468" width="900" height="72"/>
+  <text class="title" x="60" y="498">appliance-compositor</text>
+  <text class="item" x="60" y="522">weston + appliance-shell (windows placed on outputs by rule) · PipeWire sound server</text>
+
+  <!-- outputs -->
+  <rect class="box out" x="60" y="590" width="280" height="44"/>
+  <text class="item" x="200" y="617" text-anchor="middle">T6 built-in screen (optional)</text>
+  <rect class="box out" x="600" y="590" width="280" height="44"/>
+  <text class="item" x="740" y="617" text-anchor="middle" font-weight="700">TV (HDMI) · TV speakers</text>
+
+  <!-- admin page -> cinemad -->
+  <line class="line" x1="210" y1="132" x2="210" y2="204" marker-end="url(#arrow)"/>
+  <text class="label" x="222" y="164">HTTP API</text>
+  <text class="label" x="222" y="181">(gateway socket)</text>
+
+  <!-- kiosk <-> server -->
+  <line class="line" x1="740" y1="134" x2="740" y2="204" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  <text class="label" x="752" y="164">loads /v; the page makes</text>
+  <text class="label" x="752" y="181">its own API calls</text>
+
+  <!-- cinemad -> kiosk -->
+  <line class="line" x1="380" y1="262" x2="538" y2="262" marker-end="url(#arrow)"/>
+  <text class="label" x="459" y="252" text-anchor="middle">start / stop</text>
+  <line class="line" x1="380" y1="300" x2="538" y2="300" marker-end="url(#arrow)"/>
+  <text class="label" x="459" y="290" text-anchor="middle">kiosk.env: sink, zoom</text>
+  <line class="line" x1="380" y1="338" x2="538" y2="338" marker-end="url(#arrow)"/>
+  <text class="label" x="459" y="328" text-anchor="middle">account (credential)</text>
+  <line class="line" x1="538" y1="366" x2="382" y2="366" marker-end="url(#arrow)"/>
+  <text class="label" x="459" y="356" text-anchor="middle">sign-in state</text>
+
+  <!-- cinemad -> compositor -->
+  <line class="line" x1="210" y1="382" x2="210" y2="466" marker-end="url(#arrow)"/>
+  <text class="label" x="222" y="418">clients.d/fygo-cinema.ini</text>
+  <text class="label" x="222" y="435">(window rule: which output)</text>
+
+  <!-- kiosk -> compositor -->
+  <line class="line" x1="740" y1="382" x2="740" y2="466" marker-end="url(#arrow)"/>
+  <text class="label" x="752" y="418">a Wayland window</text>
+  <text class="label" x="752" y="435">and its sound</text>
+
+  <!-- compositor -> outputs -->
+  <line class="line dashed" x1="200" y1="540" x2="200" y2="588" marker-end="url(#arrow)"/>
+  <line class="line" x1="740" y1="540" x2="740" y2="588" marker-end="url(#arrow)"/>
+
+  <!-- legend -->
+  <rect class="swatch ours" x="400" y="598" width="16" height="16" rx="4"/>
+  <text class="label" x="424" y="611">Fygo Cinema</text>
+  <rect class="swatch base" x="400" y="620" width="16" height="16" rx="4"/>
+  <text class="label" x="424" y="633">shared base package</text>
+</svg>

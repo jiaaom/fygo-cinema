@@ -1,0 +1,11 @@
+{
+  "name": "fygo-cinema",
+  "version": "1.0.0",
+  "description": "Fygo Cinema TV kiosk: the Fygo TV web app fullscreen on the TV, driven by a remote",
+  "main": "main.js",
+  "private": true,
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.3.0"
+  }
+}

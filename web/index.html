@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- Fygo Cinema — admin page (fnOS desktop window, admins only). Served by
+     cinemad at /app/fygo-cinema/ on the gateway socket. Layout, tokens and the
+     TrimApp SDK (web-app.js, copied verbatim) follow the fnOS app convention. -->
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="appTitle">Fygo Cinema</title>
+  <link rel="stylesheet" href="style.css?v=__V__">
+</head>
+
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <h1 data-i18n="appTitle">Fygo Cinema</h1>
+        <p id="summary" data-i18n="loading">Loading...</p>
+      </div>
+      <div class="row-actions">
+        <button id="refreshBtn" class="ghost-btn" type="button" data-i18n="refresh">Refresh</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="tvApp">TV app</h2>
+            <p class="hint" data-i18n="tvAppHint">Fygo TV on the TV, driven by a remote. It starts when the TV is plugged in and stops when it is unplugged.</p>
+          </div>
+          <label class="switch"><input id="enabledSwitch" type="checkbox" disabled><i></i></label>
+        </div>
+        <div class="stats-grid">
+          <div class="stat"><span data-i18n="status">Status</span><strong id="statStatus">-</strong></div>
+          <div class="stat"><span data-i18n="tv">TV</span><strong id="statTv">-</strong></div>
+          <div class="stat"><span data-i18n="signIn">Sign-in</span><strong id="statSignIn">-</strong></div>
+          <div class="stat"><span data-i18n="version">Version</span><strong id="statVersion">-</strong></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2 data-i18n="account">Account</h2>
+            <p class="hint" data-i18n="accountHint">The Fygo TV account the TV signs in with. It is stored encrypted on this NAS and never shown again.</p>
+          </div>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span id="accountLabel">-</span>
+            <p class="hint" id="accountSub"></p>
+          </div>
+          <button id="removeAccountBtn" class="ghost-btn" type="button" data-i18n="remove" hidden>Remove</button>
+        </div>
+        <form class="row account-form" id="accountForm" autocomplete="off">
+          <input id="userInput" type="text" autocomplete="off" spellcheck="false" data-i18n-ph="username" placeholder="Username">
+          <input id="passInput" type="password" autocomplete="new-password" data-i18n-ph="password" placeholder="Password">
+          <button id="saveAccountBtn" class="primary-btn" type="submit" data-i18n="save">Save</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2 data-i18n="screen">Screen</h2>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span data-i18n="tvScreen">TV screen</span>
+            <p class="hint" data-i18n="tvScreenHint">Automatic takes the display that has a TV plugged in and is not used by another app. Changing it restarts the display server: other screens go dark for a few seconds.</p>
+          </div>
+          <select id="screenSel" disabled></select>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span data-i18n="pageSize">Page size</span>
+            <p class="hint" data-i18n="pageSizeHint">Automatic: 200 % above 1080p, 150 % at 1080p and below. The TV app restarts to apply it.</p>
+          </div>
+          <select id="zoomSel" disabled></select>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2 data-i18n="sound">Sound</h2>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span data-i18n="output">Output</span>
+            <p class="hint" data-i18n="outputHint">Automatic plays through the TV's own speakers (its HDMI sound).</p>
+          </div>
+          <select id="audioSel" disabled></select>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span data-i18n="volume">Volume</span>
+            <p class="hint" data-i18n="volumeHint">Of the output above. The remote's volume keys change it too.</p>
+          </div>
+          <div class="volume-row">
+            <input id="volumeRange" type="range" min="0" max="100" step="1" disabled>
+            <output id="volumeValue">-</output>
+            <label class="switch" data-i18n-title="mute"><input id="muteSwitch" type="checkbox" disabled><i></i></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section-head">
+          <h2 data-i18n="actions">Actions</h2>
+        </div>
+        <div class="row">
+          <div class="row-label">
+            <span data-i18n="restartApp">Restart TV app</span>
+            <p class="hint" data-i18n="restartAppHint">For a frozen or misbehaving TV app; it signs in again by itself.</p>
+          </div>
+          <button id="restartBtn" class="danger-btn" type="button" disabled data-i18n="restart">Restart</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+      <h2 id="modalTitle"></h2>
+      <div id="modalBody"></div>
+      <div class="modal-actions">
+        <button id="modalCancel" class="ghost-btn" type="button" data-i18n="cancel">Cancel</button>
+        <button id="modalOk" class="primary-btn" type="button" data-i18n="confirm">OK</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    // A module that fails to load/parse never runs, which would leave
+    // "Loading..." up forever; say so instead.
+    addEventListener("error", (e) => {
+      const el = document.getElementById("summary");
+      if (el && el.dataset.i18n === "loading" && el.textContent.startsWith("Loading")) el.textContent = "Failed to load: " + (e.message || (e.target && e.target.src) || "script error");
+    }, true);
+  </script>
+  <script type="module" src="app.js?v=__V__"></script>
+</body>
+
+</html>

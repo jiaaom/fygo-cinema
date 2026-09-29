@@ -1,0 +1,34 @@
+<!doctype html>
+<!-- Fygo Cinema's own screen on the TV, for when the Fygo TV web app can't be
+     shown: no account stored yet, the stored account was refused, or the media
+     server can't be reached. A local page (no network needed), in the look of
+     Fygo TV's login page (its background and logo, copied here). The kiosk
+     opens it with ?state=no-account|failed|connecting&msg=&url=&lang=. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fygo Cinema</title>
+  <link rel="stylesheet" href="setup.css">
+</head>
+<body>
+  <main class="card">
+    <img class="logo" src="logo.png" alt="Fygo TV">
+    <div class="content">
+      <div class="text">
+        <h1 id="title"></h1>
+        <p id="lead"></p>
+        <p id="reason" class="reason" hidden></p>
+        <ol id="steps" hidden></ol>
+        <p id="hint" class="hint"></p>
+      </div>
+      <div id="qrBox" class="qr-box" hidden>
+        <div id="qr" class="qr"></div>
+        <div id="url" class="url"></div>
+      </div>
+      <div id="spinner" class="spinner" hidden></div>
+    </div>
+  </main>
+  <script src="qrcode.js"></script>
+  <script src="setup.js"></script>
+</body>
+</html>
