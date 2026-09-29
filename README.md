@@ -38,9 +38,9 @@ moves.
 ## Requirements
 
 - FygoOS / fnOS 1.2 or newer, with an Intel GPU.
-- **Fygo TV** (`trim.media`) and **[Appliance Compositor](https://github.com/jiaaom/appliance-compositor)**. App Center
-  installs both as dependencies; the compositor's `.fpk` is also on its
-  [releases page](https://github.com/jiaaom/appliance-compositor/releases).
+- **Fygo TV** (`trim.media`), from App Center.
+- **[Appliance Compositor](https://github.com/jiaaom/appliance-compositor)**: its `.fpk` is attached to every Fygo
+  Cinema release (and on its own [releases page](https://github.com/jiaaom/appliance-compositor/releases)).
 - A TV (or monitor) on the NAS's HDMI or DisplayPort output, and a remote or
   keyboard for it (Bluetooth or USB).
 
@@ -50,10 +50,13 @@ sound server.
 
 ## Install
 
-1. In App Center, install `fygo-cinema.fpk` (manual installation).
-2. Open **Fygo Cinema** on the fnOS desktop and enter the Fygo TV account the
+1. Download `appliance-compositor.fpk` and `fygo-cinema.fpk` from the
+   [latest release](https://github.com/jiaaom/fygo-cinema/releases/latest).
+2. In App Center → Manual installation, install `appliance-compositor.fpk`
+   first, then `fygo-cinema.fpk`.
+3. Open **Fygo Cinema** on the fnOS desktop and enter the Fygo TV account the
    TV should sign in with.
-3. Plug in the TV. Fygo TV appears on it.
+4. Plug in the TV. Fygo TV appears on it.
 
 Without an account, the TV shows these same steps, with a QR code of the
 NAS's address.
