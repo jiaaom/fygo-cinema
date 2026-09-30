@@ -396,7 +396,20 @@ function createWindow() {
   });
   const wc = win.webContents;
 
-  wc.on('did-navigate', (_e, url) => onPage(wc, url));
+  // An HTTP error page is a page that loaded: at boot the gateway (nginx) is
+  // often up before the media server behind it and answers 502 Bad Gateway
+  // (black text on our black window: a black TV with a line). Treat it like
+  // an unreachable server: the "connecting" screen, which reloads the web app
+  // as soon as it answers 200.
+  wc.on('did-navigate', (_e, url, code, status) => {
+    if (code >= 400 && !isSetupPage(url)) {
+      console.log(`cinema: ${url} answered ${code} ${status || ''}; waiting for the media server`);
+      report({ page: '', message: `The media server answered ${code} ${status || ''}`.trim() });
+      showSetup(wc, 'connecting');
+      return;
+    }
+    onPage(wc, url);
+  });
   wc.on('did-navigate-in-page', (_e, url, isMainFrame) => { if (isMainFrame) onPage(wc, url); });
   wc.on('will-navigate', (e, url) => { if (!allowed(url) && !isSetupPage(url)) { e.preventDefault(); } });
   wc.on('did-finish-load', () => { if (!isSetupPage(wc.getURL())) rememberLanguage(wc); });

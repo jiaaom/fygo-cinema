@@ -137,7 +137,7 @@ background and logo are copied there.
 |---|---|---|
 | `no-account` | no account stored: the kiosk runs anyway, with an empty placeholder credential sealed by cinemad | "One more step": 3 steps and a QR code of the NAS's web address (`http://<LAN IP>:5666/`; the IP is the source address of the default route) |
 | `failed` | the stored account refused 3 times, or the login form not recognised | "Couldn't sign in", the page's own error text, the same steps and QR code |
-| `connecting` | the start page fails to load (server starting or updating) | a spinner; the kiosk probes the start page every 3 s and goes on by itself when it answers |
+| `connecting` | the start page fails to load, or answers an HTTP error (at boot nginx answers 502 until Fygo TV is up) | a spinner; the kiosk probes the start page every 3 s and goes on by itself when it answers |
 
 - **OK** on the setup screen tries again: the web app if an account is
   stored, else the `no-account` screen.

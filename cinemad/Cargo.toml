@@ -1,6 +1,6 @@
 [package]
 name = "cinemad"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 description = "Fygo Cinema backend: TV screen and sound choice, stored account, kiosk supervision, admin page"
 license = "MIT"

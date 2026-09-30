@@ -651,6 +651,13 @@ function tick() {
   if (a && a !== current && a.matches('input:not([type=checkbox]):not([type=radio]), textarea') && shown(a)) {
     current = a;
   }
+  // nothing focused yet on a browse page (it rendered after the first
+  // attempt, e.g. a slow start after boot): focus its first unit, so the ring
+  // is there before the first key
+  if (!current && !menu && !inPlayerPage()) {
+    const list = units();
+    if (list.length) focusUnit(recalled(list) || initial(list), false);
+  }
   // the focused unit vanished (list re-rendered, popup closed): refocus
   if (current && !shown(current) && (!inPlayerPage() || playerUi || menu)) {
     current = null;
