@@ -1,4 +1,6 @@
 #!/bin/bash
 . "$(dirname "$0")/common"
 install_units
+# a reinstall that kept the settings (the way to upgrade by hand)
+remove_http_cache
 exit 0

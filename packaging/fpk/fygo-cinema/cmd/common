@@ -93,7 +93,8 @@ UNIT
 
 # Versions before 1.1.2 kept an HTTP disk cache in the kiosk's profile,
 # mostly video segments it could never reuse (hundreds of MB on the system
-# disk). The kiosk no longer has one; drop the old one (kiosk stopped).
+# disk). The kiosk no longer has one; drop the old one (kiosk stopped) on an
+# upgrade, and on a reinstall that kept the settings.
 remove_http_cache() {
     rm -rf "$STATE/kiosk/Cache"
 }
