@@ -155,7 +155,7 @@ It covers:
 |---|---|
 | `/var/lib/fygo-cinema/settings.json` | the admin page's choices |
 | `/var/lib/fygo-cinema/account.cred`, `account.json` | the sealed account, and who it is |
-| `/var/lib/fygo-cinema/kiosk/` | the kiosk's Chromium profile (the web app's session, player preferences) |
+| `/var/lib/fygo-cinema/kiosk/` | the kiosk's Chromium profile (the web app's session, player preferences; no HTTP disk cache, see `main.js`) |
 | `/run/fygo-cinema/kiosk.env` | sound output and page zoom for the kiosk (written by cinemad) |
 | `/run/fygo-cinema/state.json` | the kiosk's sign-in state and page (read by cinemad) |
 | `/etc/appliance-compositor/clients.d/fygo-cinema.ini` | our window rule (written by cinemad) |

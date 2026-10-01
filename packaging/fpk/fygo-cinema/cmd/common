@@ -91,6 +91,13 @@ UNIT
     systemctl enable "$DAEMON_UNIT" >/dev/null 2>&1
 }
 
+# Versions before 1.1.2 kept an HTTP disk cache in the kiosk's profile,
+# mostly video segments it could never reuse (hundreds of MB on the system
+# disk). The kiosk no longer has one; drop the old one (kiosk stopped).
+remove_http_cache() {
+    rm -rf "$STATE/kiosk/Cache"
+}
+
 remove_units() {
     systemctl stop "$KIOSK_UNIT" >/dev/null 2>&1 || true
     systemctl disable --now "$DAEMON_UNIT" >/dev/null 2>&1 || true

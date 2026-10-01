@@ -2,4 +2,5 @@
 # Units are generated from the package paths: write them again.
 . "$(dirname "$0")/common"
 install_units
+remove_http_cache
 exit 0

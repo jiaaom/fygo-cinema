@@ -65,6 +65,11 @@ app.commandLine.appendSwitch('enable-zero-copy');
 // A TV plays sound without anyone clicking first.
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 if (process.env.CINEMA_MUTE) app.commandLine.appendSwitch('mute-audio');
+// No HTTP disk cache. Nearly all of it would be the player's HLS segments
+// (tens of MB each at original quality), which the server sends with no
+// expiry and no validators, so Chromium stores them but can never reuse them:
+// it only filled the system disk. Everything comes from the NAS anyway.
+app.commandLine.appendSwitch('disable-http-cache');
 if (process.env.CINEMA_DEBUG_PORT) {
   app.commandLine.appendSwitch('remote-debugging-address', '127.0.0.1');
   app.commandLine.appendSwitch('remote-debugging-port', process.env.CINEMA_DEBUG_PORT);
